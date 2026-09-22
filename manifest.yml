@@ -1,0 +1,11 @@
+---
+applications:
+- name: sap-btp-cf-hana-integration
+  random-route: false
+  routes:
+    - route: sap-btp-cf-hana-integration.<your_domain>
+  path: ./
+  memory: 256M
+  buildpacks:
+    - python_buildpack
+  command: python main.py
