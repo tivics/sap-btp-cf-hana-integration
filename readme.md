@@ -65,11 +65,11 @@ In both deployment options below, the app bits (source code) and the `manifest.y
 
 ```mermaid
 flowchart TD
-    A["Project files\n(main.py, requirements.txt, runtime.txt, ...)"] -->|zip everything except manifest.yml| B["app.zip"]
-    C["manifest.yml"] -->|kept separate| D{"Deploy"}
-    B --> D
-    D -->|Option A| CLI["cf push -f manifest.yml -p app.zip"]
-    D -->|Option B| UI["SAP BTP Cockpit\nDeploy Application (upload zip + manifest.yml)"]
+    A["Project files\n(main.py, requirements.txt, runtime.txt, ...)"] -->|zip, manifest.yml excluded| B["app.zip"]
+    B -->|"-p app.zip"| CLI["cf push -f manifest.yml -p app.zip"]
+    M1["manifest.yml\n(local file)"] -->|"-f flag: read from local path\n(zip content irrelevant)"| CLI
+    B -->|upload app archive| UI["SAP BTP Cockpit\nDeploy Application"]
+    M2["manifest.yml"] -->|separate upload, required by wizard| UI
     CLI --> E["SAP BTP Cloud Foundry space"]
     UI --> E
     E --> F["Running app instance"]
