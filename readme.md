@@ -63,18 +63,32 @@ In both deployment options below, the app bits (source code) and the `manifest.y
 
 > ℹ️ Excluding `manifest.yml` from the zip is **required for the cockpit's "Deploy Application" wizard** (Option B) — it expects the app archive and the manifest as two separate uploads and won't process a manifest bundled inside the zip. For the **CLI** (Option A), it's not strictly necessary: `cf push -f manifest.yml -p app.zip` always reads the manifest from the local path given via `-f`, regardless of whether a copy of it also sits inside the zip. We exclude it in both cases anyway, to keep the same zip and workflow usable for either option.
 
+**Option A (CLI):** `manifest.yml` doesn't need to be excluded — `cf push` always reads it from the local path given via `-f`, whatever else is in the zip.
+
 ```mermaid
-flowchart TD
-    A["Project files\n(main.py, requirements.txt, runtime.txt, ...)"] -->|zip, manifest.yml excluded| B["app.zip"]
-    B -->|"-p app.zip"| CLI["cf push -f manifest.yml -p app.zip"]
-    M1["manifest.yml\n(local file)"] -->|"-f flag: read from local path\n(zip content irrelevant)"| CLI
-    B -->|upload app archive| UI["SAP BTP Cockpit\nDeploy Application"]
-    M2["manifest.yml"] -->|separate upload, required by wizard| UI
+flowchart LR
+    A["Project folder\n(main.py, requirements.txt, runtime.txt,\nmanifest.yml, ...)"] -->|zip app bits| B["app.zip"]
+    A -->|"-f manifest.yml\n(read directly from local folder)"| CLI["cf push -f manifest.yml -p app.zip"]
+    B -->|"-p app.zip"| CLI
     CLI --> E["SAP BTP Cloud Foundry space"]
-    UI --> E
-    E --> F["Running app instance"]
+```
+
+**Option B (Cockpit):** here the exclusion is required — the wizard takes the archive and the manifest as two separate uploads.
+
+```mermaid
+flowchart LR
+    A["Project folder"] -->|zip, manifest.yml excluded| B["app.zip"]
+    B -->|upload app archive| UI["SAP BTP Cockpit\nDeploy Application"]
+    M["manifest.yml"] -->|separate upload, required| UI
+    UI --> E["SAP BTP Cloud Foundry space"]
+```
+
+Either way, once deployed the app connects to HANA via `hana-ml` and can be smoke-tested from Postman:
+
+```mermaid
+flowchart LR
+    H["Postman"] -->|POST https://your-route/run| F["Running app instance"]
     F <-->|SQL connection via hana-ml| G["SAP HANA instance"]
-    H["Postman"] -->|POST https://your-route/run| F
 ```
 
 ### Option A: Deploy via Cloud Foundry CLI
